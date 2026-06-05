@@ -24,11 +24,7 @@ COPY requirements.txt .
 # and prevent build timeouts on Render (which has a 10-minute build limit on the free tier).
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir numpy==1.24.3 Cython && \
-    pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir -r requirements.txt
-
-# Pre-download and cache MTCNN and InceptionResnetV1 weights to prevent runtime OOM crashes on Render
-RUN python -c "from facenet_pytorch import InceptionResnetV1, MTCNN; MTCNN(); InceptionResnetV1(pretrained='vggface2')"
 
 # Pre-download and cache InsightFace buffalo_l models to prevent runtime download spikes and OOM
 RUN python -c "from insightface.app import FaceAnalysis; FaceAnalysis(name='buffalo_l')"

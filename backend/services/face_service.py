@@ -13,16 +13,7 @@ from typing import Any
 
 import cv2
 import numpy as np
-import torch
 from PIL import Image
-
-# Globally disable PyTorch autograd gradients and configure minimal concurrency to prevent OOM
-torch.set_grad_enabled(False)
-torch.set_num_threads(1)
-try:
-    torch.set_num_interop_threads(1)
-except RuntimeError:
-    pass
 
 from config import get_settings
 
@@ -73,8 +64,14 @@ def get_face_analyzer() -> Any:
             LOGGER.warning("InsightFace unavailable, switching to facenet-pytorch: %s", insight_err)
             try:
                 from facenet_pytorch import InceptionResnetV1, MTCNN
+                import torch
 
+                torch.set_grad_enabled(False)
                 torch.set_num_threads(1)
+                try:
+                    torch.set_num_interop_threads(1)
+                except RuntimeError:
+                    pass
                 device = "cuda:0" if torch.cuda.is_available() else "cpu"
                 mtcnn = MTCNN(
                     image_size=160,
@@ -243,6 +240,7 @@ def extract_embedding_bgr(bgr: np.ndarray) -> np.ndarray | None:
                 return (emb / norm).astype(np.float32)
 
             if _face_backend == "facenet":
+                import torch
                 detector = app["detector"]
                 embedder = app["embedder"]
                 device = app["device"]
