@@ -1,0 +1,27 @@
+# SecureFaceMeet backend — Python 3.11
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.9
+pydantic>=2.6.0
+pydantic-settings>=2.2.0
+email-validator>=2.0.0
+python-dotenv>=1.0.0
+
+# Database
+sqlalchemy>=2.0.0
+
+# Admin exports (participants CSV / Excel / PDF)
+openpyxl>=3.1.0
+fpdf2>=2.7.0
+
+# Auth
+python-jose[cryptography]>=3.3.0
+
+# Vision / ML
+numpy>=1.24.0,<2.0.0
+opencv-python-headless>=4.8.0
+Pillow>=10.0.0
+torch>=2.1.0
+torchvision>=0.16.0
+onnxruntime>=1.17.0
+facenet-pytorch>=2.6.0
