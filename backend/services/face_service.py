@@ -16,6 +16,14 @@ import numpy as np
 import torch
 from PIL import Image
 
+# Globally disable PyTorch autograd gradients and configure minimal concurrency to prevent OOM
+torch.set_grad_enabled(False)
+torch.set_num_threads(1)
+try:
+    torch.set_num_interop_threads(1)
+except RuntimeError:
+    pass
+
 from config import get_settings
 
 LOGGER = logging.getLogger(__name__)
@@ -177,6 +185,11 @@ def detect_primary_face_landmarks_bgr(bgr: np.ndarray) -> dict[str, np.ndarray] 
         areas = np.asarray([(b[2] - b[0]) * (b[3] - b[1]) for b in boxes], dtype=np.float32)
         idx = int(np.argmax(areas))
         lm = np.asarray(points[idx], dtype=np.float32)
+        
+        # Clean up temporary objects to prevent OOM
+        del rgb, boxes, _probs, points
+        gc.collect()
+
         if lm.shape[0] < 3:
             return None
         if lm.shape[0] >= 5:
@@ -249,11 +262,15 @@ def extract_embedding_bgr(bgr: np.ndarray) -> np.ndarray | None:
                 if crops.shape[0] <= best_idx:
                     best_idx = 0
                 face_tensor = crops[best_idx].unsqueeze(0).to(device)
-                with torch.no_grad():
-                    emb_tensor = embedder(face_tensor)
+                emb_tensor = embedder(face_tensor)
                 emb = emb_tensor.squeeze(0).detach().cpu().numpy().astype(np.float32)
                 norm = np.linalg.norm(emb) + 1e-8
-                return (emb / norm).astype(np.float32)
+                result = (emb / norm).astype(np.float32)
+                
+                # Explicitly clean up large PyTorch tensors to prevent OOM
+                del face_tensor, emb_tensor, crops, pil, rgb
+                gc.collect()
+                return result
         return None
     except FaceServiceUnavailable:
         raise
