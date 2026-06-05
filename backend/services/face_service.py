@@ -4,6 +4,7 @@ Singleton model — loaded once per worker process.
 """
 from __future__ import annotations
 
+import gc
 import json
 import logging
 import os
@@ -65,6 +66,7 @@ def get_face_analyzer() -> Any:
             try:
                 from facenet_pytorch import InceptionResnetV1, MTCNN
 
+                torch.set_num_threads(1)
                 device = "cuda:0" if torch.cuda.is_available() else "cpu"
                 mtcnn = MTCNN(
                     image_size=160,
@@ -258,6 +260,8 @@ def extract_embedding_bgr(bgr: np.ndarray) -> np.ndarray | None:
     except Exception:
         LOGGER.exception("Face embedding extraction failed.")
         return None
+    finally:
+        gc.collect()
 
 
 def embedding_to_json(emb: np.ndarray) -> str:

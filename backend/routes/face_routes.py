@@ -1,6 +1,7 @@
 """Face registration and verification endpoints."""
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import logging
 from pathlib import Path
@@ -59,7 +60,7 @@ async def register_face(
             detail="Invalid or too small image.",
         )
 
-    face_count = face_service.count_faces_bgr(bgr)
+    face_count = await asyncio.to_thread(face_service.count_faces_bgr, bgr)
     if face_count is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -79,7 +80,7 @@ async def register_face(
         )
 
     try:
-        emb = face_service.extract_embedding_bgr(bgr)
+        emb = await asyncio.to_thread(face_service.extract_embedding_bgr, bgr)
     except face_service.FaceServiceUnavailable as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -194,7 +195,7 @@ async def verify_face(
             detail="Invalid or too small image.",
         )
 
-    face_count = face_service.count_faces_bgr(bgr)
+    face_count = await asyncio.to_thread(face_service.count_faces_bgr, bgr)
     if face_count is None:
         return VerifyFaceResponse(
             verified=False,
@@ -212,7 +213,7 @@ async def verify_face(
         )
 
     try:
-        probe = face_service.extract_embedding_bgr(bgr)
+        probe = await asyncio.to_thread(face_service.extract_embedding_bgr, bgr)
     except face_service.FaceServiceUnavailable as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
