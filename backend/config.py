@@ -100,7 +100,7 @@ class Settings(BaseSettings):
     VIRTUAL_CLASS_DATA_DIR: str = "./data/virtual_class"
 
     # CORS (comma-separated in env: http://localhost:5173,https://app.example.com)
-    CORS_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
+    CORS_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173,https://securefacemeet-1.onrender.com"
 
     @property
     def cors_origins_list(self) -> List[str]:

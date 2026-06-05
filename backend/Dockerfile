@@ -26,6 +26,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir -r requirements.txt
 
+# Pre-download and cache MTCNN and InceptionResnetV1 weights to prevent runtime OOM crashes on Render
+RUN python -c "from facenet_pytorch import InceptionResnetV1, MTCNN; MTCNN(); InceptionResnetV1(pretrained='vggface2')"
+
 # Copy the rest of the application code
 COPY . .
 
